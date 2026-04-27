@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koolaya Bar Quiz 🎤</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d1a;
+  --surface: #1a1a30;
+  --surface2: #22224a;
+  --text: #f5f5ff;
+  --muted: #9090bb;
+}
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.app { width: 100%; max-width: 960px; padding: 20px; }
+.screen { display: none; }
+.screen.active { display: block; }
+.title-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px; }
+
+/* SETUP */
+#screen-setup { text-align: center; padding: 40px 20px; }
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem;
+  line-height: 1;
+  letter-spacing: 6px;
+  background: linear-gradient(135deg, #ff6b6b, #fd79a8, #a29bfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+.logo-sub { font-size: 1rem; color: var(--muted); margin-bottom: 3rem; letter-spacing: 4px; text-transform: uppercase; }
+.teams-section {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 480px;
+  margin: 0 auto 2rem;
+}
+.teams-section h3 {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 1.5rem;
+}
+.team-input-row { display: flex; gap: 10px; margin-bottom: 1rem; }
+.team-input-row input {
+  flex: 1;
+  background: var(--surface2);
+  border: 2px solid #3333aa;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.team-input-row input:focus { border-color: #a29bfe; }
+.team-input-row input::placeholder { color: var(--muted); }
+.btn-add {
+  background: #a29bfe;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.2s;
+}
+.btn-add:hover { background: #6c5ce7; transform: scale(1.05); }
+.teams-list { list-style: none; }
+.team-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.team-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-right: 10px;
+  display: inline-block;
+}
+.team-item-left { display: flex; align-items: center; }
+.team-item .team-name { font-weight: 700; }
+.btn-remove {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 3px 7px;
+  border-radius: 6px;
+}
+.btn-remove:hover { background: rgba(255,107,107,0.2); }
+.team-count-hint { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+.btn-start {
+  background: linear-gradient(135deg, #ff6b6b, #fd79a8);
+  border: none;
+  border-radius: 16px;
+  padding: 18px 60px;
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 8px 30px rgba(255, 107, 107, 0.4);
+}
+.btn-start:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(255,107,107,0.6); }
+.btn-start:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+.setup-hint { margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
+
+/* CATEGORIES */
+#screen-categories { padding: 20px 0; }
+.scoreboard {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.score-pill {
+  background: var(--surface);
+  border-radius: 50px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.score-pill .s-dot { width: 8px; height: 8px; border-radius: 50%; }
+.score-pill .s-name { font-weight: 700; font-size: 0.9rem; }
+.score-pill .s-score {
+  background: var(--surface2);
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  min-width: 36px;
+  text-align: center;
+}
+.section-title {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 18px;
+}
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.cat-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 28px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.cat-btn:hover:not(:disabled) { transform: translateY(-6px) scale(1.02); }
+.cat-btn:active:not(:disabled) { transform: scale(0.97); }
+.cat-btn:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(0.5); }
+.cat-icon { font-size: 2.2rem; line-height: 1; }
+.cat-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: white; }
+.cat-remaining { font-size: 0.75rem; color: rgba(255,255,255,0.75); font-weight: 700; }
+.cat-films   { background: linear-gradient(135deg, #ff6b6b, #cc1111); box-shadow: 0 8px 25px rgba(255,107,107,0.35); }
+.cat-geo     { background: linear-gradient(135deg, #26de81, #0aaf5c); box-shadow: 0 8px 25px rgba(38,222,129,0.35); }
+.cat-musique { background: linear-gradient(135deg, #ffd32a, #e67e00); box-shadow: 0 8px 25px rgba(255,211,42,0.35); }
+.cat-wtf     { background: linear-gradient(135deg, #a29bfe, #6c5ce7); box-shadow: 0 8px 25px rgba(162,155,254,0.35); }
+.cat-apero   { background: linear-gradient(135deg, #fd79a8, #cc1166); box-shadow: 0 8px 25px rgba(253,121,168,0.35); }
+.round-info { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 14px; }
+.btn-end-game {
+  display: block;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 10px 24px;
+  color: var(--muted);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-end-game:hover { border-color: #ff6b6b; color: #ff6b6b; }
+
+/* QUESTION */
+#screen-question { text-align: center; padding: 30px 20px; }
+.q-cat-badge {
+  display: inline-block;
+  border-radius: 50px;
+  padding: 8px 26px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  margin-bottom: 28px;
+  border: 2px solid transparent;
+}
+.timer-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 28px; }
+.timer-svg { transform: rotate(-90deg); width: 110px; height: 110px; }
+.t-bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+.t-ring { fill: none; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 289; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+.timer-num {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.15); }
+}
+.timer-urgent { animation: pulse 0.5s ease-in-out infinite; color: #ff6b6b !important; }
+.q-box {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 40px;
+  margin: 0 auto 28px;
+  max-width: 700px;
+}
+.q-text { font-size: 1.9rem; font-weight: 900; line-height: 1.3; }
+.q-num { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+.btn-reveal {
+  border: none;
+  border-radius: 16px;
+  padding: 16px 50px;
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.btn-reveal:hover { transform: scale(1.05); }
+
+/* ANSWER */
+#screen-answer { text-align: center; padding: 30px 20px; }
+.a-q-mini {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 18px 28px;
+  margin: 0 auto 16px;
+  max-width: 700px;
+  text-align: left;
+}
+.a-q-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+.a-q-text { font-size: 1.1rem; font-weight: 700; }
+.answer-box {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 28px 40px;
+  margin: 0 auto 28px;
+  max-width: 700px;
+  position: relative;
+  overflow: hidden;
+}
+.answer-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background: var(--cat-color, #ffffff);
+}
+.answer-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; color: var(--muted); margin-bottom: 10px; }
+.answer-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.8rem;
+  letter-spacing: 4px;
+  line-height: 1;
+}
+@keyframes pop-in {
+  0% { transform: scale(0.5); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.pts-label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+.pts-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 700px; margin: 0 auto 28px; }
+.pt-btn {
+  background: var(--surface);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 50px;
+  padding: 10px 20px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pt-btn .pt-dot { width: 8px; height: 8px; border-radius: 50%; }
+.pt-btn .pt-score {
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+  padding: 1px 10px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+}
+.pt-btn:hover:not(:disabled) { transform: scale(1.05); }
+.pt-btn.awarded { color: #0a2a15; }
+.pt-btn:disabled { cursor: default; }
+.btn-continue {
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 14px;
+  padding: 14px 44px;
+  color: var(--text);
+  background: transparent;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-continue:hover { border-color: white; background: rgba(255,255,255,0.08); }
+
+/* END */
+#screen-end { text-align: center; padding: 40px 20px; }
+.end-title { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 4px; margin-bottom: 8px; }
+.end-sub { color: var(--muted); margin-bottom: 40px; }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 30px; }
+.podium-spot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pod-name { font-weight: 900; font-size: 0.95rem; max-width: 110px; word-break: break-word; line-height: 1.2; }
+.pod-score { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; }
+.pod-bar { width: 110px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; }
+.pod-emoji { font-size: 2rem; }
+.gold   .pod-bar { background: linear-gradient(180deg, #ffd700, #e67e00); height: 180px; }
+.silver .pod-bar { background: linear-gradient(180deg, #c0c0c0, #888); height: 130px; }
+.bronze .pod-bar { background: linear-gradient(180deg, #cd7f32, #8b4513); height: 90px; }
+.other-rankings { max-width: 400px; margin: 0 auto 40px; }
+.rank-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 11px 18px;
+  margin-bottom: 8px;
+}
+.rank-pos { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--muted); width: 30px; }
+.rank-name { font-weight: 700; flex: 1; text-align: left; padding-left: 12px; }
+.rank-pts { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; }
+.btn-restart {
+  background: linear-gradient(135deg, #ff6b6b, #fd79a8);
+  border: none;
+  border-radius: 16px;
+  padding: 16px 48px;
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: transform 0.1s;
+  box-shadow: 0 8px 25px rgba(255,107,107,0.4);
+  margin-right: 10px;
+}
+.btn-restart:hover { transform: scale(1.05); }
+.btn-new-teams {
+  background: var(--surface);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: 16px 28px;
+  color: var(--text);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-new-teams:hover { border-color: white; }
+
+/* CONFETTI */
+.confetti-c { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
+.confetti-p { position: absolute; top: -20px; animation: cffall 2.2s ease-in forwards; }
+@keyframes cffall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+
+.q-translation {
+  margin-top: 14px;
+  font-size: 1.15rem;
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 400;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 12px;
+  min-height: 0;
+}
+.q-translation:empty { display: none; }
+.answer-translation {
+  font-size: 1.2rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 8px;
+}
+.answer-translation:empty { display: none; }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide-in { animation: slide-in 0.35s ease-out; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="confetti-c" id="conf"></div>
+
+<!-- ===== SETUP ===== -->
+<div id="s-setup" class="screen active">
+  <div style="text-align:center; padding:40px 20px;">
+    <div class="logo">KOOLAYA<br>BAR QUIZ</div>
+    <div class="logo-sub">🏕️ Édition Camping 🏕️</div>
+    <div class="teams-section">
+      <h3>Équipes joueurs</h3>
+      <div class="team-input-row">
+        <input type="text" id="team-input" placeholder="Nom de l'équipe…" maxlength="20" />
+        <button class="btn-add" onclick="addTeam()">+</button>
+      </div>
+      <p class="team-count-hint" id="count-hint">2 équipes minimum · 8 maximum</p>
+      <ul class="teams-list" id="teams-list"></ul>
+    </div>
+    <button class="btn-start title-font" id="btn-start" onclick="startGame()" disabled>
+      🎤 C'EST PARTI !
+    </button>
+    <p class="setup-hint">Appuie sur Entrée pour ajouter une équipe</p>
+  </div>
+</div>
+
+<!-- ===== CATEGORIES ===== -->
+<div id="s-cats" class="screen">
+  <div class="scoreboard" id="scoreboard"></div>
+  <p class="section-title">Choisir une catégorie</p>
+  <div class="categories-grid">
+    <button class="cat-btn cat-films" onclick="selectCat('films')" id="cb-films">
+      <span class="cat-icon">🎬</span>
+      <span class="cat-name">Films</span>
+      <span class="cat-remaining" id="rem-films"></span>
+    </button>
+    <button class="cat-btn cat-geo" onclick="selectCat('geo')" id="cb-geo">
+      <span class="cat-icon">🌍</span>
+      <span class="cat-name">Géographie</span>
+      <span class="cat-remaining" id="rem-geo"></span>
+    </button>
+    <button class="cat-btn cat-musique" onclick="selectCat('musique')" id="cb-musique">
+      <span class="cat-icon">🎵</span>
+      <span class="cat-name">Musique</span>
+      <span class="cat-remaining" id="rem-musique"></span>
+    </button>
+    <button class="cat-btn cat-wtf" onclick="selectCat('wtf')" id="cb-wtf">
+      <span class="cat-icon">🤪</span>
+      <span class="cat-name">WTF</span>
+      <span class="cat-remaining" id="rem-wtf"></span>
+    </button>
+    <button class="cat-btn cat-apero" onclick="selectCat('apero')" id="cb-apero">
+      <span class="cat-icon">🍹</span>
+      <span class="cat-name">Apéro</span>
+      <span class="cat-remaining" id="rem-apero"></span>
+    </button>
+  </div>
+  <p class="round-info" id="round-info"></p>
+  <button class="btn-end-game" onclick="endGame()">⛳ Terminer la partie</button>
+</div>
+
+<!-- ===== QUESTION ===== -->
+<div id="s-question" class="screen">
+  <div style="text-align:center; padding:30px 20px;">
+    <div class="q-cat-badge" id="q-badge"></div>
+    <div class="timer-wrap">
+      <svg class="timer-svg" viewBox="0 0 110 110">
+        <circle class="t-bg" cx="55" cy="55" r="46"/>
+        <circle class="t-ring" id="t-ring" cx="55" cy="55" r="46"/>
+      </svg>
+      <div class="timer-num" id="t-num">15</div>
+    </div>
+    <div class="q-box slide-in">
+      <div class="q-num" id="q-num"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-translation" id="q-translation"></div>
+    </div>
+    <button class="btn-reveal" id="btn-reveal" onclick="revealAnswer()">
+      👁️ RÉVÉLER LA RÉPONSE
+    </button>
+  </div>
+</div>
+
+<!-- ===== ANSWER ===== -->
+<div id="s-answer" class="screen">
+  <div style="text-align:center; padding:30px 20px;">
+    <div class="q-cat-badge" id="a-badge"></div>
+    <div class="a-q-mini">
+      <div class="a-q-label">Question</div>
+      <div class="a-q-text" id="a-q-text"></div>
+    </div>
+    <div class="answer-box">
+      <div class="answer-label">RÉPONSE</div>
+      <div class="answer-text pop-in" id="answer-text"></div>
+      <div class="answer-translation" id="answer-translation"></div>
+    </div>
+    <p class="pts-label">Qui a trouvé ? (cliquez pour donner +1 point)</p>
+    <div class="pts-grid" id="pts-grid"></div>
+    <button class="btn-continue" onclick="next()">Continuer →</button>
+  </div>
+</div>
+
+<!-- ===== END ===== -->
+<div id="s-end" class="screen">
+  <div style="padding:40px 20px; text-align:center;">
+    <div class="end-title">🏆 RÉSULTATS FINAUX</div>
+    <div class="end-sub">Félicitations à tous les joueurs !</div>
+    <div class="podium" id="podium"></div>
+    <div class="other-rankings" id="other-ranks"></div>
+    <div>
+      <button class="btn-restart" onclick="replay()">🔄 REJOUER</button>
+      <button class="btn-new-teams" onclick="goSetup()">👥 NOUVELLES ÉQUIPES</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+const TEAM_COLORS = ['#ff6b6b','#26de81','#ffd32a','#a29bfe','#fd79a8','#4fc3f7','#ff9f43','#00d2d3'];
+
+const QUESTIONS = {
+  films: [
+    { q: "Dans quel film apparaît Batman ?", qt: "In which film does Batman appear?", a: "Batman", at: "Batman" },
+    { q: "Dans quel film vit-on dans une simulation de la réalité ?", qt: "In which film do people live in a simulation of reality?", a: "Matrix", at: "The Matrix" },
+    { q: "Dans quel film voit-on un sorcier nommé Harry ?", qt: "In which film do we see a wizard named Harry?", a: "Harry Potter", at: "Harry Potter" },
+    { q: "Dans quel film des dinosaures sont recréés sur une île ?", qt: "In which film are dinosaurs recreated on an island?", a: "Jurassic Park", at: "Jurassic Park" },
+    { q: "Quel film célèbre montre un paquebot percuter un iceberg ?", qt: "Which famous film shows an ocean liner hitting an iceberg?", a: "Titanic", at: "Titanic" },
+  ],
+  geo: [
+    { q: "Quelle est la capitale de l'Espagne ?", qt: "What is the capital of Spain?", a: "Madrid", at: "Madrid" },
+    { q: "Quelle est la capitale de l'Italie ?", qt: "What is the capital of Italy?", a: "Rome", at: "Rome" },
+    { q: "Dans quel pays se trouve le Taj Mahal ?", qt: "In which country is the Taj Mahal located?", a: "Inde", at: "India" },
+    { q: "Quel est le plus grand océan du monde ?", qt: "What is the largest ocean in the world?", a: "Pacifique", at: "Pacific" },
+    { q: "Quelle est la capitale de la France ?", qt: "What is the capital of France?", a: "Paris", at: "Paris" },
+  ],
+  musique: [
+    { q: "Quel DJ français est le plus connu dans le monde entier ?", qt: "Which French DJ is the most famous in the entire world?", a: "David Guetta", at: "David Guetta" },
+    { q: "Qui était le chanteur emblématique du groupe Queen ?", qt: "Who was the iconic lead singer of the band Queen?", a: "Freddie Mercury", at: "Freddie Mercury" },
+    { q: "Qui interprète le tube 'Thriller' ?", qt: "Who performs the hit 'Thriller'?", a: "Michael Jackson", at: "Michael Jackson" },
+    { q: "Quelle chanteuse interprète le tube 'Hello' ?", qt: "Which singer performs the hit 'Hello'?", a: "Adele", at: "Adele" },
+    { q: "Quel chanteur est derrière 'Shape of You' ?", qt: "Which singer is behind 'Shape of You'?", a: "Ed Sheeran", at: "Ed Sheeran" },
+  ],
+  wtf: [
+    { q: "Un coq au sommet d'un toit pond un œuf — de quel côté tombe-t-il ?", qt: "A rooster at the top of a roof lays an egg — which side does it fall on?", a: "Les coqs ne pondent pas !", at: "Roosters don't lay eggs!" },
+    { q: "Combien de mois de l'année ont 28 jours ?", qt: "How many months of the year have 28 days?", a: "Les 12 !", at: "All 12 of them!" },
+    { q: "Un avion s'écrase à la frontière franco-espagnole. Où enterre-t-on les survivants ?", qt: "A plane crashes on the French-Spanish border. Where do you bury the survivors?", a: "On n'enterre pas les survivants !", at: "You don't bury survivors!" },
+    { q: "J'ai 2 pièces pour un total de 30 centimes. L'une n'est pas une pièce de 20 cts. Quelles sont ces pièces ?", qt: "I have 2 coins totalling 30 cents. One is not a 20-cent coin. What are the two coins?", a: "Une de 20 cts + une de 10 cts !", at: "A 20-cent + a 10-cent coin!" },
+    { q: "En France, peut-on légalement épouser une personne décédée ?", qt: "In France, can you legally marry a deceased person?", a: "Oui, c'est légal !", at: "Yes, it's legal!" },
+  ],
+  apero: [
+    { q: "Comment s'appelle le cocktail vodka + jus d'orange ?", qt: "What is the name of the vodka + orange juice cocktail?", a: "Screwdriver", at: "Screwdriver" },
+    { q: "Quel est l'apéritif anisé traditionnel du sud de la France ?", qt: "What is the traditional anise-flavoured aperitif from the south of France?", a: "Pastis", at: "Pastis" },
+    { q: "Quelle boisson alcoolisée est fabriquée à base de raisin fermenté ?", qt: "Which alcoholic drink is made from fermented grapes?", a: "Vin", at: "Wine" },
+    { q: "Quel alcool est la base du mojito ?", qt: "Which spirit is the base of a mojito?", a: "Rhum", at: "Rum" },
+    { q: "Dans quel pays fabrique-t-on la tequila ?", qt: "In which country is tequila made?", a: "Mexique", at: "Mexico" },
+  ],
+};
+
+const CAT = {
+  films:   { name:'Films',       icon:'🎬', color:'#ff6b6b', bg:'rgba(255,107,107,0.15)', border:'rgba(255,107,107,0.4)' },
+  geo:     { name:'Géographie',  icon:'🌍', color:'#26de81', bg:'rgba(38,222,129,0.15)',  border:'rgba(38,222,129,0.4)' },
+  musique: { name:'Musique',     icon:'🎵', color:'#ffd32a', bg:'rgba(255,211,42,0.15)',  border:'rgba(255,211,42,0.4)' },
+  wtf:     { name:'WTF',         icon:'🤪', color:'#a29bfe', bg:'rgba(162,155,254,0.15)', border:'rgba(162,155,254,0.4)' },
+  apero:   { name:'Apéro',       icon:'🍹', color:'#fd79a8', bg:'rgba(253,121,168,0.15)', border:'rgba(253,121,168,0.4)' },
+};
+
+let teams = [];
+let progress = {};
+let shuffled = {};
+let curCat = null;
+let curQ = null;
+let timerID = null;
+let timeLeft = 15;
+let totalAnswered = 0;
+
+// ---- SETUP ----
+document.getElementById('team-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTeam(); });
+
+function addTeam() {
+  const inp = document.getElementById('team-input');
+  const name = inp.value.trim();
+  if (!name || teams.length >= 8) return;
+  teams.push({ name, score: 0, color: TEAM_COLORS[teams.length % TEAM_COLORS.length] });
+  inp.value = '';
+  inp.focus();
+  renderSetupTeams();
+}
+
+function removeTeam(i) {
+  teams.splice(i, 1);
+  teams.forEach((t, j) => t.color = TEAM_COLORS[j % TEAM_COLORS.length]);
+  renderSetupTeams();
+}
+
+function renderSetupTeams() {
+  const list = document.getElementById('teams-list');
+  list.innerHTML = teams.map((t, i) => `
+    <li class="team-item">
+      <div class="team-item-left">
+        <span class="team-dot" style="background:${t.color}"></span>
+        <span class="team-name">${esc(t.name)}</span>
+      </div>
+      <button class="btn-remove" onclick="removeTeam(${i})">✕</button>
+    </li>`).join('');
+  document.getElementById('btn-start').disabled = teams.length < 2;
+  document.getElementById('count-hint').textContent =
+    teams.length === 0 ? '2 équipes minimum · 8 maximum' :
+    teams.length === 1 ? `1 équipe ajoutée — encore une !` :
+    `${teams.length} équipe${teams.length > 1 ? 's' : ''}`;
+}
+
+function startGame() {
+  Object.keys(QUESTIONS).forEach(cat => {
+    shuffled[cat] = shuffle([...QUESTIONS[cat]]);
+    progress[cat] = 0;
+  });
+  totalAnswered = 0;
+  show('s-cats');
+  renderCats();
+}
+
+// ---- CATEGORIES ----
+function renderCats() {
+  // Scoreboard
+  document.getElementById('scoreboard').innerHTML = teams.map(t => `
+    <div class="score-pill">
+      <span class="s-dot" style="background:${t.color}"></span>
+      <span class="s-name">${esc(t.name)}</span>
+      <span class="s-score">${t.score}</span>
+    </div>`).join('');
+  // Category buttons
+  Object.keys(progress).forEach(cat => {
+    const rem = QUESTIONS[cat].length - progress[cat];
+    document.getElementById('cb-' + cat).disabled = rem === 0;
+    document.getElementById('rem-' + cat).textContent = rem > 0 ? `${rem} question${rem > 1 ? 's' : ''}` : '✓ Terminé';
+  });
+  const total = Object.values(QUESTIONS).reduce((a, q) => a + q.length, 0);
+  document.getElementById('round-info').textContent = `${totalAnswered} / ${total} questions jouées`;
+}
+
+function selectCat(cat) {
+  curCat = cat;
+  curQ = shuffled[cat][progress[cat]];
+  const c = CAT[cat];
+  const total = Object.values(QUESTIONS).reduce((a, q) => a + q.length, 0);
+  const qNum = totalAnswered + 1;
+
+  setBadge('q-badge', c);
+  document.getElementById('q-num').textContent = `Question ${qNum} / ${total}`;
+  document.getElementById('q-text').textContent = curQ.q;
+  document.getElementById('q-translation').textContent = curQ.qt;
+  document.getElementById('btn-reveal').style.background = `linear-gradient(135deg, ${c.color}, ${c.color}99)`;
+  document.getElementById('btn-reveal').style.boxShadow = `0 8px 25px ${c.color}55`;
+
+  show('s-question');
+  startTimer(c.color);
+}
+
+// ---- TIMER ----
+const CIRC = 2 * Math.PI * 46;
+function startTimer(color) {
+  timeLeft = 15;
+  const ring = document.getElementById('t-ring');
+  const num = document.getElementById('t-num');
+  ring.style.stroke = color;
+  ring.style.strokeDasharray = CIRC;
+  ring.style.strokeDashoffset = '0';
+  num.textContent = 15;
+  num.style.color = color;
+  num.classList.remove('timer-urgent');
+  if (timerID) clearInterval(timerID);
+  timerID = setInterval(() => {
+    timeLeft--;
+    num.textContent = timeLeft;
+    ring.style.strokeDashoffset = ((15 - timeLeft) / 15) * CIRC;
+    if (timeLeft <= 5) { num.classList.add('timer-urgent'); ring.style.stroke = '#ff6b6b'; beep(); }
+    if (timeLeft <= 0) { clearInterval(timerID); revealAnswer(); }
+  }, 1000);
+}
+
+function stopTimer() { if (timerID) { clearInterval(timerID); timerID = null; } }
+
+// ---- REVEAL ----
+function revealAnswer() {
+  stopTimer();
+  const c = CAT[curCat];
+  setBadge('a-badge', c);
+  document.getElementById('a-q-text').textContent = curQ.q;
+  const ans = document.getElementById('answer-text');
+  ans.textContent = curQ.a;
+  ans.style.color = c.color;
+  ans.classList.remove('pop-in');
+  void ans.offsetWidth;
+  ans.classList.add('pop-in');
+  const atEl = document.getElementById('answer-translation');
+  atEl.textContent = curQ.at !== curQ.a ? curQ.at : '';
+
+  document.getElementById('pts-grid').innerHTML = teams.map((t, i) => `
+    <button class="pt-btn" id="pb-${i}" onclick="award(${i})">
+      <span class="pt-dot" style="background:${t.color}"></span>
+      <span>${esc(t.name)}</span>
+      <span class="pt-score">${t.score}</span>
+    </button>`).join('');
+
+  show('s-answer');
+  confetti(c.color);
+}
+
+function award(i) {
+  teams[i].score++;
+  const btn = document.getElementById('pb-' + i);
+  btn.classList.add('awarded');
+  btn.disabled = true;
+  btn.style.background = teams[i].color;
+  btn.style.borderColor = teams[i].color;
+  btn.querySelector('.pt-score').textContent = teams[i].score;
+}
+
+function next() {
+  progress[curCat]++;
+  totalAnswered++;
+  const allDone = Object.keys(progress).every(cat => progress[cat] >= QUESTIONS[cat].length);
+  if (allDone) { endGame(); return; }
+  show('s-cats');
+  renderCats();
+}
+
+// ---- END ----
+function endGame() {
+  stopTimer();
+  const sorted = [...teams].sort((a, b) => b.score - a.score);
+  const n = sorted.length;
+
+  // Build podium (max 3)
+  const spots = [];
+  if (n >= 2) spots.push({ t: sorted[1], cls: 'silver', e: '🥈' });
+  spots.push({ t: sorted[0], cls: 'gold', e: '🥇' });
+  if (n >= 3) spots.push({ t: sorted[2], cls: 'bronze', e: '🥉' });
+
+  document.getElementById('podium').innerHTML = spots.map(s => `
+    <div class="podium-spot ${s.cls}">
+      <div class="pod-name">${esc(s.t.name)}</div>
+      <div class="pod-score">${s.t.score} pts</div>
+      <div class="pod-bar"><span class="pod-emoji">${s.e}</span></div>
+    </div>`).join('');
+
+  const others = sorted.slice(3);
+  document.getElementById('other-ranks').innerHTML = others.map((t, i) => `
+    <div class="rank-row">
+      <span class="rank-pos">#${i + 4}</span>
+      <span class="rank-name">${esc(t.name)}</span>
+      <span class="rank-pts">${t.score} pts</span>
+    </div>`).join('');
+
+  show('s-end');
+  setTimeout(() => confetti('#ffd700'), 100);
+  setTimeout(() => confetti('#a29bfe'), 600);
+  setTimeout(() => confetti('#fd79a8'), 1100);
+}
+
+function replay() {
+  teams.forEach(t => t.score = 0);
+  startGame();
+}
+function goSetup() {
+  teams = [];
+  renderSetupTeams();
+  show('s-setup');
+}
+
+// ---- UTILS ----
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function setBadge(id, c) {
+  const el = document.getElementById(id);
+  el.textContent = c.icon + ' ' + c.name;
+  el.style.background = c.bg;
+  el.style.color = c.color;
+  el.style.borderColor = c.border;
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function confetti(col) {
+  const c = document.getElementById('conf');
+  const palette = [col, '#fff', '#ffd700', col + 'aa'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-p';
+    const color = palette[Math.floor(Math.random() * palette.length)];
+    const size = 7 + Math.random() * 9;
+    p.style.cssText = `left:${Math.random()*100}%;background:${color};width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.5+Math.random()*1}s;animation-delay:${Math.random()*0.4}s;`;
+    c.appendChild(p);
+    setTimeout(() => p.remove(), 3000);
+  }
+}
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 900; o.type = 'sine';
+    g.gain.setValueAtTime(0.08, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    o.start(); o.stop(ctx.currentTime + 0.12);
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
